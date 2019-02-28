@@ -10,8 +10,8 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 	 * Default constructor with nothing initialized
 	 */
 	public BasicDoubleLinkedList() {
-		firstNode = null;
-		lastNode = null;
+		firstNode = new Node();
+		lastNode = firstNode;
 		nodeCount = 0;
 	}
 	
@@ -52,7 +52,21 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		//and set the new Node as the firstNode
 		Node newNode = new Node (data);
 		newNode.nextNode = firstNode;
+		firstNode.previousNode = newNode;
 		firstNode = newNode;
+		
+		//If the list was empty, the new Node is both first and last.
+		//Remove references to the old newNode
+		if(nodeCount == 0) {
+			lastNode = firstNode;
+			firstNode.previousNode = null;
+			firstNode.nextNode = null;
+			lastNode.previousNode = null;
+			lastNode.nextNode = null;
+		}
+		
+		//Increment nodeCount to reflect the add
+		nodeCount++;
 		
 		//Return the list with the Node added
 		return this;
@@ -68,8 +82,22 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		//Create a new Node containing the argument data
 		//and set the new Node as the lastNode
 		Node newNode = new Node (data);
+		lastNode.nextNode = newNode;
 		newNode.previousNode = lastNode;
 		lastNode = newNode;
+		
+		//If the list was empty, the new Node is both first and last.
+		//Remove references to the old newNode
+		if(nodeCount == 0) {
+			firstNode = newNode;
+			firstNode.nextNode = null;
+			firstNode.previousNode = null;
+			lastNode.previousNode = null;
+			lastNode.nextNode = null;
+		}
+		
+		//Increment nodeCount to reflect the add
+		nodeCount++;
 		
 		//Return the list with the Node added
 		return this;
@@ -103,7 +131,7 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 	 * Create an iterator for traversing the list
 	 * @return an Iterator object at list position 0
 	 */
-	public ListIterator<T> iterator() throws UnsupportedOperationException, NoSuchElementException{
+	public Iterator iterator() throws UnsupportedOperationException, NoSuchElementException{
 		//Create a new Iterator object using default constructor
 		return new Iterator();
 	}
@@ -117,7 +145,7 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 	public BasicDoubleLinkedList<T> remove(T targetData, java.util.Comparator<T> comparator) {
 		
 		//Create iterator
-		ListIterator<T> iterator = iterator();
+		Iterator iterator = iterator();
 		
 		//Iterate through the list to find the given data
 		boolean found = false;
@@ -148,6 +176,7 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		//Retrieve the data from the first Node and set the Node to null
 		T data = firstNode.data;
 		firstNode.data = null;
+		nodeCount--;
 		
 		//Remove the first Node by promoting the next Node in line
 		firstNode = firstNode.nextNode;
@@ -170,9 +199,10 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		T data = lastNode.data;
 		lastNode.data = null;
 		
-		//Remove the last Node and set the second-to-last node to last
-		lastNode = lastNode.previousNode;
+		//Remove the last Node and set the second-to-last node to last, if it exists
+		if (getSize() > 1) lastNode = lastNode.previousNode;
 		lastNode.nextNode = null;
+		nodeCount--;
 		
 		return data;
 	}
@@ -185,18 +215,21 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		ArrayList<T> array = new ArrayList<>();
 		
 		//If the list is empty, return null
-		if(getSize() == 0) return null;
+		if(getSize() == 0) return array;
 		
 		else {
 		
 		//Create an iterator to traverse the list
-		ListIterator<T> iterator = iterator();
-		
-		//If the list is empty, return a null ArrayList
-		
+		Iterator iterator = iterator();
+				
 		//Traverse the list and add each Node's data to the ArrayList
 		while(iterator.hasNext()) {
-			array.add(iterator.next());
+			//Make a copy of the iterator's data
+			T data = iterator.next();
+			
+			//Null data does not need added to the array; otherwise add to the array
+			if (data == null) continue;
+			else array.add(data);
 		}
 		
 		//Return the populated ArrayList
@@ -212,8 +245,8 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 	 *
 	 */
 	class Node {
-		private Node previousNode, nextNode;
-		private T data;
+		Node previousNode, nextNode;
+		T data;
 		
 		/**
 		 * Default constructor with nothing initialized
@@ -249,9 +282,15 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		
 	}
 	
+	/**
+	 * An Iterator object for traversing the list
+	 * @author Mike Meyers
+	 * @version 1.0
+	 *
+	 */
 	class Iterator implements ListIterator<T> {
-		private Node thisNode, previousNode, nextNode;
-		private int cursor;
+		protected Node thisNode, previousNode, nextNode;
+		protected int cursor;
 		
 		/**
 		 * Create a default Iterator at position 0 in the list
@@ -287,8 +326,8 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 			else {
 				//Step all references one Node further down the list and advance the cursor
 				previousNode = thisNode;
-				nextNode = this.nextNode.nextNode;
-				thisNode = this.nextNode;
+				thisNode = nextNode;
+				nextNode = thisNode.nextNode;
 				cursor++;
 				
 				//Return the data from the new thisNode
@@ -313,15 +352,28 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		 */
 		@Override
 		public T previous() throws NoSuchElementException{
-			if(!hasPrevious()) throw new NoSuchElementException("There is no previous node in the list");
+			if(cursor == 0 ) throw new NoSuchElementException("There is no previous node in the list");
 			else {
+				//Pull data from thisNode for returning
+				T data = thisNode.data;
+				
+				//Step all references backward and shift the cursor
 				nextNode = thisNode;
 				thisNode = previousNode;
+				
+				//If we step back to the beginning of the list, previousNode gets set back to null
+				if(cursor == 1) {
+					previousNode = null;
+				}
+				else {
 				previousNode = previousNode.previousNode;
+				}
+				
+				//Decrement the cursor to follow the iterator move
 				cursor--;
 				
 				//Return the data from the new thisNode
-				return thisNode.data;
+				return data;
 			}
 		}
 
