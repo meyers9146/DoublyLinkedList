@@ -1,5 +1,12 @@
 import java.util.Comparator;
 
+/**
+ * Create a generic sorted double linked list of objects. Uses a Comparator to determine the sorting arrangement
+ * @author Mike Meyers
+ * @version 1.0
+ *
+ * @param <T> A generic type determining the objects that will be able to be added to the list. Must extend Comparable.
+ */
 public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDoubleLinkedList<T> {
 	
 	Comparator<T> comparator;
@@ -30,7 +37,7 @@ public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDouble
 	 * @param data the first data point in the argument list
 	 * @param additionalData the rest of the argument objects
 	 */
-	@SafeVarargs //Should be safe because all data will be of type T (TODO: I may be misunderstanding what heap pollution is, though)
+	@SafeVarargs //Should be safe because all data will be of type T
 	public SortedDoubleLinkedList(Comparator<T> comparator, T data, T... additionalData) {
 		firstNode = new Node(data);
 		nodeCount = 1;
@@ -91,8 +98,8 @@ public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDouble
 	}
 	
 	/**
-	 * Create a new iterator for traversing the array
-	 * @return an iterator object that can traverse the array
+	 * Create a new iterator for traversing the list
+	 * @return an iterator object that can traverse the list
 	 */
 	@Override
 	public Iterator iterator() {
@@ -150,7 +157,7 @@ public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDouble
 			nodeToAdd.previousNode = thisNode;
 			thisNode.nextNode = nodeToAdd;
 			nodeToAdd.nextNode = nextNode;
-			nextNode.previousNode = nodeToAdd; //TODO: did this fix it?
+			nextNode.previousNode = nodeToAdd;
 			nodeCount++; //Increment size counter. The two super-method calls above contain their own nodeCount++
 			}
 			

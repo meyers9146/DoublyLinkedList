@@ -2,6 +2,12 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
+/**
+ * Create an unsorted double linked list of objects.
+ * @author Mike Meyers
+ *
+ * @param <T> The type of objects that will populate the list
+ */
 public class BasicDoubleLinkedList <T> implements Iterable<T>{
 	protected Node firstNode, lastNode;
 	protected int nodeCount;
@@ -31,7 +37,7 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 	 * @param data the first data point in the argument list
 	 * @param additionalData the rest of the argument objects
 	 */
-	@SafeVarargs //Should be safe because all data will be of type T (TODO: I may be misunderstanding what heap pollution is, though)
+	@SafeVarargs //Should be safe because all data will be of type T
 	public BasicDoubleLinkedList(T data, T... additionalData) {
 		firstNode = new Node(data);
 		nodeCount = 1;
@@ -75,7 +81,7 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 	/**
 	 * Add a Node to the end of the list
 	 * @param data the data to be added to the list
-	 * @return the exist
+	 * @return the existing list with the new data appended
 	 */
 	public BasicDoubleLinkedList<T> addToEnd(T data) {
 		
