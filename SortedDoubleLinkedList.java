@@ -1,23 +1,51 @@
 import java.util.Comparator;
 
-//TODO: Javadocs!
 public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDoubleLinkedList<T> {
+	
 	Comparator<T> comparator;
 	
-	//Default constructor initializing the comparator
+	/**
+	 * Create an empty SortedDoubleLinkedList
+	 * @param comparator the Comparator that will determine list sorting
+	 */
 	public SortedDoubleLinkedList(Comparator<T> comparator) {
 		super();
 		this.comparator = comparator;
 	}
 	
-	//Constructor for creating a SortedDoubleLinkedList with a single data point
-	//No sorting is needed since there is only one data point
+	/**
+	 * Create a SortedDoubleLinkedList with a single data point
+	 * @param data the object to be added
+	 * @param comparator the Comparator that will determine list sorting
+	 */
 	public SortedDoubleLinkedList(T data, Comparator<T> comparator) {
 		super(data);
 		this.comparator = comparator;
 	}
 	
+	/**
+	 * Create a list and populate with objects of type T. The objects will be added to the list
+	 * in the order in which the appear in the argument list
+	 * @param comparator the Comparator that will determine list sorting
+	 * @param data the first data point in the argument list
+	 * @param additionalData the rest of the argument objects
+	 */
+	@SafeVarargs //Should be safe because all data will be of type T (TODO: I may be misunderstanding what heap pollution is, though)
+	public SortedDoubleLinkedList(Comparator<T> comparator, T data, T... additionalData) {
+		firstNode = new Node(data);
+		nodeCount = 1;
+		this.comparator = comparator;
+		
+		for (T datum : additionalData) {
+			this.add(datum);
+		}
+	}
 	
+	/**
+	 * Add an object to the list
+	 * @param data the object to be added
+	 * @return a SortedDoubleLinkedList object with the added data
+	 */
 	public SortedDoubleLinkedList<T> add(T data) {
 		Iterator listIterator = iterator();
 		
@@ -42,11 +70,21 @@ public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDouble
 		}
 	}
 	
+	/**
+	 * Unsupported method. The add function handles insertion of data where it is needed
+	 * @param data the object to be added
+	 * @throws UnsupportedOperationException because this method is not supported
+	 */
 	@Override
 	public SortedDoubleLinkedList<T> addToEnd(T data) throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("Operation not supported");
 	}
 	
+	/**
+	 * Unsupported method. The add function handles insertion of data where it is needed
+	 * @param data the object to be added
+	 * @throws UnsupportedOperationException because this method is not supported
+	 */
 	@Override
 	public SortedDoubleLinkedList<T> addToFront(T data) throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("Operation not supported");
@@ -61,10 +99,22 @@ public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDouble
 		return new Iterator();
 	}
 	
+	/**
+	 * Remove a specific object from the list
+	 * @param data the object to be removed
+	 * @param comparator the Comparator matching the argument data to the list data
+	 * @return the sorted list minus the removed object (will return an empty list if the list is reduced to zero objects)
+	 */
 	public SortedDoubleLinkedList<T> remove (T data, Comparator<T> comparator) {
 		return (SortedDoubleLinkedList<T>) super.remove(data, comparator);
 	}
 	
+	/**
+	 * An internal Iterator class for traversing the Sorted List
+	 * @author Mike Meyers
+	 * @version 1.0
+	 *
+	 */
 	class Iterator extends BasicDoubleLinkedList<T>.Iterator {
 		
 		/**
@@ -100,7 +150,13 @@ public class SortedDoubleLinkedList<T extends Comparable<T>> extends BasicDouble
 			nodeToAdd.previousNode = thisNode;
 			thisNode.nextNode = nodeToAdd;
 			nodeToAdd.nextNode = nextNode;
+			nextNode.previousNode = nodeToAdd; //TODO: did this fix it?
 			nodeCount++; //Increment size counter. The two super-method calls above contain their own nodeCount++
+			}
+			
+			//Lastly - if inserting at the second-to-last position, lastNode's previousNode reference will need updated
+			if(cursor == nodeCount - 2) {
+				lastNode.previousNode = nodeToAdd;
 			}
 		}
 		
