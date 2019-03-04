@@ -148,19 +148,38 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		Iterator iterator = iterator();
 		
 		//Iterate through the list to find the given data
-		boolean found = false;
+		boolean found = false;		
 		while(found == false && iterator.hasNext()) {
 			if (comparator.compare(targetData, iterator.next()) == 0) {
 				found = true;
 			}
 		}
 		
-		//If the data is found, have the iterator remove it
+		//If the data is found, remove it
 		if(found == true) {
-			iterator.remove();
+			
+			//Remove case if the first node is going to be removed
+			if(iterator.thisNode.equals(firstNode)) {
+				iterator.thisNode.data = null;
+				iterator.nextNode.previousNode = null;
+				firstNode = iterator.nextNode;
+			}
+			//Remove case if the last node is going to be removed
+			else if(iterator.thisNode.equals(lastNode)) {
+				iterator.thisNode.data = null;
+				iterator.previousNode.nextNode = null;
+				lastNode = iterator.previousNode;
+			}
+			//Remove case if a middle node is going to be removed
+			else {
+				iterator.thisNode.data = null;
+				iterator.previousNode.nextNode = iterator.nextNode;
+				iterator.nextNode.previousNode = iterator.previousNode;
+			}
+			nodeCount--; //Decrement list size after successful removal
+			
 		}
 		
-		//Return the list with the data entry removed
 		return this;
 	}
 	
@@ -178,9 +197,11 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		firstNode.data = null;
 		nodeCount--;
 		
-		//Remove the first Node by promoting the next Node in line
+		//Remove the first Node by promoting the next Node in line, if it exists
+		if (getSize() > 0) {
 		firstNode = firstNode.nextNode;
 		firstNode.previousNode = null;
+		}
 		
 		//Return the retrieved data
 		return data;
@@ -402,23 +423,8 @@ public class BasicDoubleLinkedList <T> implements Iterable<T>{
 		 * @throws NoSuchElementException if the list is empty
 		 */
 		@Override
-		public void remove() throws NoSuchElementException{
-			
-			if(getSize() == 0) throw new NoSuchElementException("Cannot remove a Node from an empty list");
-			
-			//Set the previous Node's next reference to the next Node, and vice versa
-			this.previousNode.nextNode = this.nextNode;
-			this.nextNode.previousNode = this.previousNode;
-			
-			//Remove the data from the removed Node
-			thisNode.data = null;
-			
-			//Step the iterator back to the previous Node
-			this.previousNode = previousNode.previousNode;
-			thisNode = previousNode;
-			cursor--;
-			
-			
+		public void remove() throws UnsupportedOperationException{
+			throw new UnsupportedOperationException("Operation not implemented");
 		}
 
 		/**
